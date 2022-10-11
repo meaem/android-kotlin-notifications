@@ -24,11 +24,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.android.eggtimernotifications.R
 import com.example.android.eggtimernotifications.databinding.FragmentEggTimerBinding
+import com.google.firebase.messaging.FirebaseMessaging
 
 class EggTimerFragment : Fragment() {
 
@@ -53,6 +55,12 @@ class EggTimerFragment : Fragment() {
             getString(R.string.egg_notification_channel_id),
             getString(R.string.egg_notification_channel_name)
         )
+
+        createChannel(
+            getString(R.string.breakfast_notification_channel_id),
+            getString(R.string.breakfast_notification_channel_name)
+        )
+        subscrieToTopic()
         return binding.root
     }
 
@@ -60,12 +68,13 @@ class EggTimerFragment : Fragment() {
         // TODO: Step 1.6 START create a channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notiChannel =
-                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
             notiChannel.apply {
                 enableLights(true)
                 lightColor = Color.RED
                 enableVibration(true)
                 description = "time for breakfast"
+                setShowBadge(false)
             }
             val notiMgr = requireActivity().getSystemService(NotificationManager::class.java)
             notiMgr.createNotificationChannel(notiChannel)
@@ -73,6 +82,20 @@ class EggTimerFragment : Fragment() {
 
         // TODO: Step 1.6 END create a channel
 
+    }
+
+    private fun subscrieToTopic() {
+        FirebaseMessaging.getInstance().subscribeToTopic(TOPIC)
+            .addOnCompleteListener {
+                val msg = if (it.isSuccessful) getString(R.string.message_subscribed)
+                else getString(R.string.message_subscribe_failed)
+
+
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            }
+//            .addOnFailureListener {
+//
+//            }
     }
 
     companion object {
